@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { initializeFirestore } from 'firebase/firestore'
+import { initializeApp } from "firebase/app"
+import { getAuth } from "firebase/auth"
+import { getFirestore } from "firebase/firestore/lite"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,14 +14,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
-
-/*
-  Force Firestore to use long polling.
-
-  This can fix Firestore requests that stay stuck on "Saving..."
-  because of certain browsers, extensions, antivirus software,
-  proxies, or network configurations.
-*/
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-})
+export const db = getFirestore(app)
