@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
-import { Check, Pencil, Target, X } from 'lucide-react'
+import { Check, Dumbbell, Pencil, Target, X } from 'lucide-react'
 import { db } from '../firebase'
 
-export default function GoalCard({ userId, selectedDate, consumed, goal, setGoal }) {
+export default function GoalCard({ userId, selectedDate, consumed, burned = 0, goal, setGoal }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(String(goal || 2000))
   const [saving, setSaving] = useState(false)
@@ -96,10 +96,11 @@ export default function GoalCard({ userId, selectedDate, consumed, goal, setGoal
     }
   }
 
-  const remaining = Math.max(goal - consumed, 0)
-  const over = Math.max(consumed - goal, 0)
-  const isOver = consumed > goal
-  const percent = Math.min((consumed / Math.max(goal, 1)) * 100, 100)
+  const netCalories = Math.max(consumed - burned, 0)
+  const remaining = Math.max(goal - netCalories, 0)
+  const over = Math.max(netCalories - goal, 0)
+  const isOver = netCalories > goal
+  const percent = Math.min((netCalories / Math.max(goal, 1)) * 100, 100)
 
   return (
     <section className={`goal-card calorie-balance-card card${isOver ? ' is-over' : ''}`}>
@@ -126,6 +127,8 @@ export default function GoalCard({ userId, selectedDate, consumed, goal, setGoal
           <p className="calorie-balance-label">{isOver ? 'calories over' : 'calories left'}</p>
           <p className="calorie-balance-meta">
             <strong>{consumed.toLocaleString()}</strong> eaten
+            <span aria-hidden="true">•</span>
+            <strong className="burned-inline"><Dumbbell size={13} /> {burned.toLocaleString()}</strong> burned
             <span aria-hidden="true">•</span>
             <strong>{goal.toLocaleString()}</strong> goal
           </p>
@@ -177,18 +180,22 @@ export default function GoalCard({ userId, selectedDate, consumed, goal, setGoal
         <div className="progress-fill" style={{ width: `${percent}%` }} />
       </div>
 
-      <div className="goal-stats calorie-balance-stats">
+      <div className="goal-stats calorie-balance-stats four-stats">
         <div>
           <strong>{consumed.toLocaleString()}</strong>
-          <span>eaten</span>
+          <span>food</span>
+        </div>
+        <div>
+          <strong className="burned-stat">-{burned.toLocaleString()}</strong>
+          <span>workout</span>
+        </div>
+        <div>
+          <strong>{netCalories.toLocaleString()}</strong>
+          <span>net</span>
         </div>
         <div>
           <strong>{goal.toLocaleString()}</strong>
-          <span>daily goal</span>
-        </div>
-        <div>
-          <strong>{Math.round((consumed / Math.max(goal, 1)) * 100)}%</strong>
-          <span>used</span>
+          <span>goal</span>
         </div>
       </div>
     </section>

@@ -9,6 +9,7 @@ import AddEntry from './components/AddEntry'
 import EntryList from './components/EntryList'
 import History from './components/History'
 import WeightTracker from './components/WeightTracker'
+import WorkoutTracker from './components/WorkoutTracker'
 
 const pad = (n) => String(n).padStart(2, '0')
 const todayKey = () => {
@@ -21,6 +22,7 @@ export default function App() {
   const [goal, setGoal] = useState(2000)
   const [selectedDate, setSelectedDate] = useState(todayKey())
   const [entries, setEntries] = useState([])
+  const [workouts, setWorkouts] = useState([])
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => onAuthStateChanged(auth, setUser), [])
@@ -47,11 +49,39 @@ export default function App() {
     return unsubscribe
   }, [user, selectedDate, refreshKey])
 
+  useEffect(() => {
+    if (!user) return undefined
+
+    const q = query(
+      collection(db, 'users', user.uid, 'workouts'),
+      where('dateKey', '==', selectedDate),
+    )
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const nextWorkouts = snapshot.docs
+          .map((item) => ({ id: item.id, ...item.data() }))
+          .sort((a, b) => (b.time || '').localeCompare(a.time || ''))
+        setWorkouts(nextWorkouts)
+      },
+      (error) => console.error('Workout listener error:', error),
+    )
+
+    return unsubscribe
+  }, [user, selectedDate])
+
   const consumed = useMemo(
     () => entries.reduce((sum, entry) => sum + (Number(entry.calories) || 0), 0),
     [entries],
   )
 
+  const burned = useMemo(
+    () => workouts.reduce((sum, workout) => sum + (Number(workout.caloriesBurned) || 0), 0),
+    [workouts],
+  )
+
+  const netCalories = Math.max(consumed - burned, 0)
   const onAdded = useCallback(() => setRefreshKey((v) => v + 1), [])
 
   if (user === undefined) {
@@ -96,13 +126,15 @@ export default function App() {
         <section className="hero-copy">
           <p className="eyebrow">YOUR NUTRITION, SIMPLIFIED</p>
           <h1>{selectedIsToday ? 'Today’s calories.' : 'Daily history.'}</h1>
-          <p>See what you have left, then log your food right underneath.</p>
+          <p>Food adds calories. Workouts subtract burned calories automatically.</p>
         </section>
 
         <History
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-          total={consumed}
+          total={netCalories}
+          consumed={consumed}
+          burned={burned}
           goal={goal}
         />
 
@@ -112,20 +144,39 @@ export default function App() {
               userId={user.uid}
               selectedDate={selectedDate}
               consumed={consumed}
+              burned={burned}
               goal={goal}
               setGoal={setGoal}
             />
 
             {selectedIsToday ? (
-              <AddEntry userId={user.uid} onAdded={onAdded} />
+              <>
+                <AddEntry userId={user.uid} onAdded={onAdded} />
+                <WorkoutTracker
+                  userId={user.uid}
+                  selectedDate={selectedDate}
+                  workouts={workouts}
+                  burned={burned}
+                  canAdd
+                />
+              </>
             ) : (
-              <section className="card history-note">
-                <strong>Viewing a past or future day</strong>
-                <p>Go back to today to add a new calorie entry. Your history remains available here.</p>
-                <button className="secondary-btn" type="button" onClick={() => setSelectedDate(todayKey())}>
-                  Return to today
-                </button>
-              </section>
+              <>
+                <section className="card history-note">
+                  <strong>Viewing a past or future day</strong>
+                  <p>Go back to today to add new food or workout entries. Your history remains available here.</p>
+                  <button className="secondary-btn" type="button" onClick={() => setSelectedDate(todayKey())}>
+                    Return to today
+                  </button>
+                </section>
+                <WorkoutTracker
+                  userId={user.uid}
+                  selectedDate={selectedDate}
+                  workouts={workouts}
+                  burned={burned}
+                  canAdd={false}
+                />
+              </>
             )}
           </div>
 

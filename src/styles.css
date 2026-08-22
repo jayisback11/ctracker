@@ -398,3 +398,253 @@ input[type="time"] {
     max-width: none;
   }
 }
+
+/* =========================================================
+   Workout tracking
+   ========================================================= */
+:root {
+  --burn: #85d7ff;
+}
+
+.four-stats {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.burned-stat,
+.burned-inline {
+  color: var(--burn) !important;
+}
+
+.burned-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.workout-card {
+  padding: 24px;
+}
+
+.workout-heading {
+  align-items: flex-start;
+}
+
+.workout-subtitle {
+  max-width: 330px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.burned-badge {
+  flex-shrink: 0;
+  min-width: 92px;
+  padding: 10px 12px;
+  border: 1px solid rgba(133, 215, 255, .18);
+  border-radius: 14px;
+  background: rgba(133, 215, 255, .06);
+  color: var(--burn);
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: center;
+  column-gap: 5px;
+}
+
+.burned-badge strong {
+  font: 800 17px 'Manrope', sans-serif;
+}
+
+.burned-badge span {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+}
+
+.workout-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.workout-form label {
+  min-width: 0;
+  max-width: 100%;
+  color: #b9c4be;
+  font-size: 12px;
+  font-weight: 600;
+  display: grid;
+  gap: 7px;
+}
+
+.workout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workout-add-btn {
+  min-height: 47px;
+  border: 1px solid rgba(133, 215, 255, .18);
+  border-radius: 13px;
+  background: rgba(133, 215, 255, .10);
+  color: #dff5ff;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.workout-add-btn:hover {
+  border-color: rgba(133, 215, 255, .45);
+  background: rgba(133, 215, 255, .16);
+}
+
+.workout-add-btn:disabled {
+  opacity: .65;
+  cursor: default;
+}
+
+.workout-list {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.workout-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.workout-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.workout-row-main {
+  min-width: 0;
+}
+
+.workout-row-main > strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.workout-row-main > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.workout-row-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.workout-row-right > strong {
+  color: var(--burn);
+  font-size: 14px;
+}
+
+.workout-row-right > strong span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.workout-empty {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+.workout-empty svg {
+  color: var(--burn);
+}
+
+.workout-readonly-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .workout-card {
+    padding: 20px;
+  }
+
+  .workout-form input,
+  .workout-form select,
+  .workout-form textarea {
+    font-size: 16px !important;
+  }
+
+  .workout-form-grid,
+  .workout-form-grid label,
+  .workout-form .input-icon-wrap,
+  .workout-form .calorie-input-wrap {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .workout-form input[type="time"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .workout-heading {
+    gap: 9px;
+  }
+
+  .burned-badge {
+    min-width: 78px;
+    padding: 9px 8px;
+  }
+
+  .workout-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .four-stats {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 13px;
+  }
+
+  .calorie-balance-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .calorie-balance-meta span {
+    margin: 0 3px;
+  }
+}

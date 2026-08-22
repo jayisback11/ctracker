@@ -9,7 +9,15 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
       match /weights/{weightId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /dailyGoals/{dateKey} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
