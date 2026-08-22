@@ -85,7 +85,13 @@ export default function App() {
 
         <div className="dashboard-grid">
           <div className="left-column">
-            <GoalCard userId={user.uid} consumed={consumed} goal={goal} setGoal={setGoal} />
+            <GoalCard
+              userId={user.uid}
+              selectedDate={selectedDate}
+              consumed={consumed}
+              goal={goal}
+              setGoal={setGoal}
+            />
             <WeightTracker userId={user.uid} />
             {selectedIsToday && <AddEntry userId={user.uid} onAdded={onAdded} />}
             {!selectedIsToday && (
