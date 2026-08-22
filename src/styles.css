@@ -205,3 +205,36 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
     font-size: 16px !important;
   }
 }
+
+/* FIX MOBILE DATE + TIME INPUT OVERFLOW */
+@media (max-width: 700px) {
+  input[type="date"],
+  input[type="time"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    box-sizing: border-box;
+
+    font-size: 16px !important;
+
+    display: block;
+  }
+
+  /* Important when the inputs are inside flex/grid */
+  .food-form,
+  .entry-form,
+  .form-group,
+  .input-group,
+  label {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
