@@ -27,10 +27,12 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return undefined
+
     const q = query(
       collection(db, 'users', user.uid, 'entries'),
       where('dateKey', '==', selectedDate),
     )
+
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -41,6 +43,7 @@ export default function App() {
       },
       (error) => console.error('Entry listener error:', error),
     )
+
     return unsubscribe
   }, [user, selectedDate, refreshKey])
 
@@ -52,7 +55,12 @@ export default function App() {
   const onAdded = useCallback(() => setRefreshKey((v) => v + 1), [])
 
   if (user === undefined) {
-    return <div className="splash"><Flame size={28} /><span>CalTrack</span></div>
+    return (
+      <div className="splash">
+        <Flame size={28} />
+        <span>CalTrack</span>
+      </div>
+    )
   }
 
   if (!user) return <AuthScreen />
@@ -65,11 +73,21 @@ export default function App() {
         <div className="topbar-inner">
           <div className="brand">
             <div className="brand-mark"><Flame size={22} /></div>
-            <div><strong>CalTrack</strong><span>daily calorie tracker</span></div>
+            <div>
+              <strong>CalTrack</strong>
+              <span>daily calorie tracker</span>
+            </div>
           </div>
+
           <div className="user-actions">
-            <div className="user-pill"><UserRound size={15} /><span>{user.email}</span></div>
-            <button className="logout-btn" type="button" onClick={() => signOut(auth)}><LogOut size={17} /><span>Log out</span></button>
+            <div className="user-pill">
+              <UserRound size={15} />
+              <span>{user.email}</span>
+            </div>
+            <button className="logout-btn" type="button" onClick={() => signOut(auth)}>
+              <LogOut size={17} />
+              <span>Log out</span>
+            </button>
           </div>
         </div>
       </header>
@@ -78,10 +96,15 @@ export default function App() {
         <section className="hero-copy">
           <p className="eyebrow">YOUR NUTRITION, SIMPLIFIED</p>
           <h1>{selectedIsToday ? 'Today’s calories.' : 'Daily history.'}</h1>
-          <p>Log food in seconds and keep your daily intake synced across your devices.</p>
+          <p>See what you have left, then log your food right underneath.</p>
         </section>
 
-        <History selectedDate={selectedDate} setSelectedDate={setSelectedDate} total={consumed} goal={goal} />
+        <History
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          total={consumed}
+          goal={goal}
+        />
 
         <div className="dashboard-grid">
           <div className="left-column">
@@ -92,17 +115,24 @@ export default function App() {
               goal={goal}
               setGoal={setGoal}
             />
-            <WeightTracker userId={user.uid} />
-            {selectedIsToday && <AddEntry userId={user.uid} onAdded={onAdded} />}
-            {!selectedIsToday && (
+
+            {selectedIsToday ? (
+              <AddEntry userId={user.uid} onAdded={onAdded} />
+            ) : (
               <section className="card history-note">
                 <strong>Viewing a past or future day</strong>
                 <p>Go back to today to add a new calorie entry. Your history remains available here.</p>
-                <button className="secondary-btn" type="button" onClick={() => setSelectedDate(todayKey())}>Return to today</button>
+                <button className="secondary-btn" type="button" onClick={() => setSelectedDate(todayKey())}>
+                  Return to today
+                </button>
               </section>
             )}
           </div>
-          <EntryList entries={entries} userId={user.uid} selectedDate={selectedDate} />
+
+          <div className="right-column">
+            <EntryList entries={entries} userId={user.uid} selectedDate={selectedDate} />
+            <WeightTracker userId={user.uid} />
+          </div>
         </div>
       </main>
     </div>

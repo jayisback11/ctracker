@@ -198,55 +198,203 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
   .entry-right { gap: 2px; }
 }
 
-@media (max-width: 700px) {
+/* =========================================================
+   Calorie balance redesign
+   ========================================================= */
+.right-column {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.calorie-balance-card {
+  overflow: hidden;
+}
+
+.calorie-balance-topline {
+  position: relative;
+  z-index: 1;
+}
+
+.calorie-balance-hero {
+  padding: 30px 0 25px;
+  text-align: center;
+}
+
+.calorie-balance-kicker {
+  margin: 0 0 8px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+
+.calorie-balance-number {
+  color: var(--text);
+  font: 800 clamp(62px, 9vw, 92px)/0.92 'Manrope', sans-serif;
+  letter-spacing: -5px;
+}
+
+.calorie-balance-label {
+  margin: 10px 0 0;
+  color: #dfe8e2;
+  font: 800 18px 'Manrope', sans-serif;
+  letter-spacing: -.4px;
+  text-transform: uppercase;
+}
+
+.calorie-balance-meta {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.calorie-balance-meta strong {
+  color: #dfe8e2;
+}
+
+.calorie-balance-meta span {
+  margin: 0 8px;
+  color: #526069;
+}
+
+.calorie-balance-progress {
+  height: 10px;
+}
+
+.calorie-balance-stats {
+  padding-top: 2px;
+}
+
+.calorie-balance-card.is-over .calorie-balance-kicker,
+.calorie-balance-card.is-over .calorie-balance-label {
+  color: #ffb0a8;
+}
+
+.calorie-balance-card.is-over .progress-fill {
+  background: linear-gradient(90deg, #ff8f8f, #ffb18b);
+}
+
+.goal-edit-panel {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.025);
+}
+
+.goal-edit-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.goal-edit-heading strong {
+  font: 800 17px 'Manrope', sans-serif;
+}
+
+.goal-edit-heading span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Keep native mobile date/time controls inside their card and prevent iOS focus zoom. */
+input,
+select,
+textarea,
+.entry-form label,
+.date-time-grid,
+.date-time-grid label,
+.input-icon-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"],
+input[type="time"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 760px) {
+  .left-column,
+  .right-column {
+    gap: 16px;
+  }
+
+  .calorie-balance-card {
+    padding: 20px;
+  }
+
+  .calorie-balance-hero {
+    padding: 28px 0 24px;
+  }
+
+  .calorie-balance-number {
+    font-size: clamp(64px, 22vw, 84px);
+    letter-spacing: -4px;
+  }
+
+  .calorie-balance-label {
+    font-size: 16px;
+  }
+
+  .add-card {
+    margin-top: -2px;
+  }
+
   input,
   select,
   textarea {
     font-size: 16px !important;
   }
-}
 
-/* FIX MOBILE DATE + TIME INPUT OVERFLOW */
-@media (max-width: 700px) {
   input[type="date"],
   input[type="time"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-
-    box-sizing: border-box;
-
-    font-size: 16px !important;
-
     display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
-  /* Important when the inputs are inside flex/grid */
-  .food-form,
-  .entry-form,
-  .form-group,
-  .input-group,
-  label {
-    min-width: 0;
-    max-width: 100%;
-  }
-}
-
-input,
-select,
-textarea {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-@media (max-width: 700px) {
-  input[type="date"]::-webkit-date-and-time-value {
-    text-align: center;
-    min-width: 0;
-  }
-
+  input[type="date"]::-webkit-date-and-time-value,
   input[type="time"]::-webkit-date-and-time-value {
-    text-align: center;
     min-width: 0;
+    text-align: left;
+  }
+}
+
+@media (max-width: 440px) {
+  .calorie-balance-topline {
+    align-items: flex-start;
+  }
+
+  .calorie-balance-topline .icon-title span {
+    font-size: 12px;
+  }
+
+  .calorie-balance-topline .small-action-btn {
+    flex-shrink: 0;
+  }
+
+  .calorie-balance-meta {
+    font-size: 12px;
+  }
+
+  .calorie-balance-stats strong {
+    font-size: 14px;
+  }
+
+  .goal-edit-panel {
+    padding: 14px;
+  }
+
+  .goal-edit-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .goal-edit-row input {
+    max-width: none;
   }
 }
