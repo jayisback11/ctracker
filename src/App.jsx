@@ -10,6 +10,7 @@ import EntryList from './components/EntryList'
 import History from './components/History'
 import WeightTracker from './components/WeightTracker'
 import WorkoutTracker from './components/WorkoutTracker'
+import WorkoutPlan from './components/WorkoutPlan'
 
 const pad = (n) => String(n).padStart(2, '0')
 const todayKey = () => {
@@ -185,6 +186,8 @@ export default function App() {
             <WeightTracker userId={user.uid} />
           </div>
         </div>
+
+        <WorkoutPlan />
       </main>
     </div>
   )

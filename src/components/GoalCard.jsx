@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
+import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
 import { Check, Dumbbell, Pencil, Target, X } from 'lucide-react'
 import { db } from '../firebase'
 
-export default function GoalCard({ userId, selectedDate, consumed, burned = 0, goal, setGoal }) {
+export default function GoalCard({ userId, consumed, burned = 0, goal, setGoal }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(String(goal || 2000))
   const [saving, setSaving] = useState(false)
@@ -13,39 +13,26 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
   useEffect(() => setDraft(String(goal || 2000)), [goal])
 
   useEffect(() => {
-    if (!userId || !selectedDate) return undefined
+    if (!userId) return undefined
 
     setError('')
     setSavedMessage('')
 
-    const dailyGoalRef = doc(db, 'users', userId, 'dailyGoals', selectedDate)
+    const userRef = doc(db, 'users', userId)
 
     return onSnapshot(
-      dailyGoalRef,
-      async (snap) => {
-        if (snap.exists()) {
-          const savedGoal = Number(snap.data()?.goal)
-          if (savedGoal > 0) {
-            setGoal(savedGoal)
-            return
-          }
-        }
-
-        try {
-          const userSnap = await getDoc(doc(db, 'users', userId))
-          const legacyGoal = Number(userSnap.data()?.dailyGoal)
-          setGoal(legacyGoal > 0 ? legacyGoal : 2000)
-        } catch (err) {
-          console.error('Fallback goal load error:', err)
-          setGoal(2000)
-        }
+      userRef,
+      (snap) => {
+        const savedGoal = Number(snap.data()?.dailyGoal)
+        setGoal(savedGoal > 0 ? savedGoal : 2000)
       },
       (err) => {
         console.error('Daily goal listener error:', err)
-        setError('Could not load this day’s calorie goal from Firebase.')
+        setError('Could not load your daily calorie goal from Firebase.')
+        setGoal(2000)
       },
     )
-  }, [userId, selectedDate, setGoal])
+  }, [userId, setGoal])
 
   const startEditing = () => {
     setDraft(String(goal || 2000))
@@ -74,12 +61,12 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
     setSaving(true)
 
     try {
+      // Store one goal on the user profile so the same target is used every day.
       await setDoc(
-        doc(db, 'users', userId, 'dailyGoals', selectedDate),
+        doc(db, 'users', userId),
         {
-          goal: clean,
-          dateKey: selectedDate,
-          updatedAt: serverTimestamp(),
+          dailyGoal: clean,
+          dailyGoalUpdatedAt: serverTimestamp(),
         },
         { merge: true },
       )
@@ -87,10 +74,10 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
       setGoal(clean)
       setDraft(String(clean))
       setEditing(false)
-      setSavedMessage(`Daily goal updated to ${clean.toLocaleString()} calories.`)
+      setSavedMessage(`Daily goal updated to ${clean.toLocaleString()} calories for every day.`)
     } catch (err) {
       console.error('Daily goal save error:', err)
-      setError('Could not save this day’s goal. Check your Firebase connection and Firestore rules.')
+      setError('Could not save your daily goal. Check your Firebase connection and Firestore rules.')
     } finally {
       setSaving(false)
     }
@@ -107,7 +94,7 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
       <div className="card-topline calorie-balance-topline">
         <div className="icon-title">
           <Target size={18} />
-          <span>Calories for this day</span>
+          <span>Daily calorie goal</span>
         </div>
 
         {!editing && (
@@ -130,7 +117,7 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
             <span aria-hidden="true">•</span>
             <strong className="burned-inline"><Dumbbell size={13} /> {burned.toLocaleString()}</strong> burned
             <span aria-hidden="true">•</span>
-            <strong>{goal.toLocaleString()}</strong> goal
+            <strong>{goal.toLocaleString()}</strong> every day
           </p>
         </div>
       )}
@@ -139,7 +126,7 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
         <form className="goal-edit-form goal-edit-panel" onSubmit={save}>
           <div className="goal-edit-heading">
             <strong>Change daily goal</strong>
-            <span>This goal is saved for {selectedDate}.</span>
+            <span>This setting is saved to your profile and applies to every day.</span>
           </div>
 
           <label>
@@ -195,7 +182,7 @@ export default function GoalCard({ userId, selectedDate, consumed, burned = 0, g
         </div>
         <div>
           <strong>{goal.toLocaleString()}</strong>
-          <span>goal</span>
+          <span>daily goal</span>
         </div>
       </div>
     </section>
