@@ -163,34 +163,55 @@ export default function WorkoutTracker({ userId, selectedDate, workouts, burned,
   }
 
   const workoutStyles = `
-    .home-plan-shell { margin-top: 16px; padding: 16px; border: 1px solid #dbe7e1; border-radius: 18px; background: linear-gradient(180deg, #fbfffd 0%, #f4fbf7 100%); }
+    .workout-card { color: #f8fafc; background: #0f172a !important; border-color: #263244 !important; }
+    .workout-heading h2, .workout-card h2, .workout-card h3, .workout-card strong, .workout-card label { color: #f8fafc; }
+    .workout-card .eyebrow { color: #94a3b8; }
+    .workout-card .workout-subtitle, .workout-card p, .workout-readonly-note { color: #94a3b8; }
+    .home-plan-shell { margin-top: 16px; padding: 16px; border: 1px solid #334155; border-radius: 18px; background: linear-gradient(180deg, #111c2f 0%, #0b1324 100%); }
     .home-plan-day { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 14px; }
-    .home-plan-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #64748b; margin-bottom: 5px; }
-    .home-plan-day h3 { margin: 0; font-size: 18px; line-height: 1.25; }
-    .home-plan-day p { margin: 6px 0 0; color: #64748b; font-size: 13px; }
-    .home-plan-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: #dcfce7; color: #166534; }
+    .home-plan-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #94a3b8; margin-bottom: 5px; }
+    .home-plan-day h3 { margin: 0; font-size: 18px; line-height: 1.25; color: #f8fafc; }
+    .home-plan-day p { margin: 6px 0 0; color: #94a3b8; font-size: 13px; }
+    .home-plan-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: #123c2a; color: #6ee7b7; }
     .home-exercise-list { display: grid; gap: 8px; }
-    .home-exercise-card { width: 100%; border: 1px solid #e2e8f0; background: #fff; border-radius: 14px; padding: 11px 12px; display: flex; align-items: center; gap: 11px; text-align: left; cursor: pointer; color: inherit; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
-    .home-exercise-card:hover { transform: translateY(-1px); border-color: #a7f3d0; box-shadow: 0 7px 18px rgba(15, 23, 42, .06); }
-    .home-exercise-card > svg { margin-left: auto; color: #64748b; flex: 0 0 auto; }
-    .home-exercise-number { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: #ecfdf5; color: #047857; font-size: 12px; font-weight: 800; flex: 0 0 auto; }
+    .home-exercise-card { width: 100%; border: 1px solid #334155; background: #162033; border-radius: 14px; padding: 11px 12px; display: flex; align-items: center; gap: 11px; text-align: left; cursor: pointer; color: #f8fafc; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+    .home-exercise-card:hover { transform: translateY(-1px); border-color: #34d399; background: #1b2a40; box-shadow: 0 7px 18px rgba(0, 0, 0, .28); }
+    .home-exercise-card > svg { margin-left: auto; color: #94a3b8; flex: 0 0 auto; }
+    .home-exercise-number { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: #123c2a; color: #6ee7b7; font-size: 12px; font-weight: 800; flex: 0 0 auto; }
     .home-exercise-copy { min-width: 0; display: grid; gap: 3px; }
-    .home-exercise-copy strong { font-size: 14px; }
-    .home-exercise-copy span { font-size: 12px; color: #64748b; }
+    .home-exercise-copy strong { font-size: 14px; color: #f8fafc; }
+    .home-exercise-copy span { font-size: 12px; color: #94a3b8; }
     .home-plan-tip, .home-plan-disclaimer { margin-top: 12px; border-radius: 12px; padding: 11px 12px; font-size: 12px; line-height: 1.5; }
-    .home-plan-tip { background: #eff6ff; color: #334155; border: 1px solid #dbeafe; }
-    .home-plan-disclaimer { color: #64748b; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 0; }
-    .exercise-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(15, 23, 42, .62); display: grid; place-items: center; padding: 20px; }
-    .exercise-modal { width: min(620px, 100%); max-height: min(90vh, 760px); overflow: auto; border-radius: 22px; background: #fff; box-shadow: 0 30px 80px rgba(15, 23, 42, .25); }
-    .exercise-modal-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 800; letter-spacing: .09em; color: #64748b; }
-    .exercise-back-btn, .exercise-close-btn { width: 36px; height: 36px; border: 0; border-radius: 10px; background: #f8fafc; color: #334155; display: grid; place-items: center; cursor: pointer; }
-    .exercise-back-btn:hover, .exercise-close-btn:hover { background: #eef2f7; }
-    .exercise-picture { padding: 18px 18px 0; }
+    .home-plan-tip { background: #17243a; color: #cbd5e1; border: 1px solid #334155; }
+    .home-plan-tip strong { color: #f8fafc; }
+    .home-plan-disclaimer { color: #94a3b8; background: #111827; border: 1px solid #334155; margin-bottom: 0; }
+    .burned-badge { background: #1b2a40 !important; border-color: #334155 !important; color: #f8fafc !important; }
+    .burned-badge span { color: #94a3b8 !important; }
+    .workout-form { color: #f8fafc; }
+    .workout-form input, .workout-form select, .workout-form textarea { background: #111827 !important; color: #f8fafc !important; border-color: #334155 !important; }
+    .workout-form input::placeholder { color: #64748b; }
+    .input-icon-wrap, .calorie-input-wrap { background: #111827 !important; border-color: #334155 !important; }
+    .input-icon-wrap svg { color: #94a3b8; }
+    .calorie-input-wrap span { color: #94a3b8; }
+    .workout-empty { background: #111827 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+    .workout-row { background: #111827 !important; border-color: #334155 !important; color: #f8fafc; }
+    .workout-row-main span { color: #94a3b8 !important; }
+    .workout-row-right strong { color: #f8fafc !important; }
+    .workout-row-right strong span { color: #94a3b8 !important; }
+    .delete-btn { background: #1f2937 !important; color: #fca5a5 !important; border-color: #374151 !important; }
+    .form-error { color: #fca5a5 !important; }
+    .workout-add-btn { box-shadow: none; }
+    .exercise-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(2, 6, 23, .82); display: grid; place-items: center; padding: 20px; }
+    .exercise-modal { width: min(620px, 100%); max-height: min(90vh, 760px); overflow: auto; border-radius: 22px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+    .exercise-modal-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 800; letter-spacing: .09em; color: #94a3b8; }
+    .exercise-back-btn, .exercise-close-btn { width: 36px; height: 36px; border: 0; border-radius: 10px; background: #1e293b; color: #f8fafc; display: grid; place-items: center; cursor: pointer; }
+    .exercise-back-btn:hover, .exercise-close-btn:hover { background: #334155; }
+    .exercise-picture { padding: 18px 18px 0; color: #e2e8f0; }
     .exercise-picture svg { width: 100%; height: auto; display: block; border-radius: 18px; }
     .exercise-modal-content { padding: 18px 20px 22px; }
-    .exercise-modal-content h3 { margin: 3px 0 8px; font-size: 24px; }
-    .exercise-modal-content > p:not(.eyebrow) { margin: 0; color: #475569; line-height: 1.65; }
-    .exercise-form-note { margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; font-size: 12px; line-height: 1.5; }
+    .exercise-modal-content h3 { margin: 3px 0 8px; font-size: 24px; color: #f8fafc; }
+    .exercise-modal-content > p:not(.eyebrow) { margin: 0; color: #cbd5e1; line-height: 1.65; }
+    .exercise-form-note { margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: #2a1d13; border: 1px solid #7c4a21; color: #fed7aa; font-size: 12px; line-height: 1.5; }
     @media (max-width: 560px) {
       .home-plan-shell { padding: 12px; }
       .home-plan-day h3 { font-size: 16px; }
@@ -367,12 +388,12 @@ function ExerciseIllustration({ kind }) {
     <svg viewBox="0 0 420 260" role="img" aria-hidden="true">
       <defs>
         <linearGradient id={`bg-${kind}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ecfdf5" />
-          <stop offset="100%" stopColor="#dbeafe" />
+          <stop offset="0%" stopColor="#172554" />
+          <stop offset="100%" stopColor="#0f3d33" />
         </linearGradient>
       </defs>
       <rect width="420" height="260" rx="28" fill={`url(#bg-${kind})`} />
-      <line x1="40" y1="220" x2="380" y2="220" stroke="#94a3b8" strokeWidth="4" />
+      <line x1="40" y1="220" x2="380" y2="220" stroke="#64748b" strokeWidth="4" />
       {renderPose(kind, common)}
     </svg>
   )
