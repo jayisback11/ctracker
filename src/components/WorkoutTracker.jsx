@@ -3,11 +3,11 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp, Timestamp } from '
 import {
   Activity,
   ArrowLeft,
+  CheckCircle2,
   Clock3,
   Dumbbell,
   Flame,
   Footprints,
-  Info,
   Plus,
   Trash2,
   X,
@@ -16,6 +16,30 @@ import { db } from '../firebase'
 
 const pad = (n) => String(n).padStart(2, '0')
 const localTime = (date = new Date()) => `${pad(date.getHours())}:${pad(date.getMinutes())}`
+
+const EXERCISE_CALORIES = {
+  'Bodyweight Squat': 35,
+  'Push-Up': 25,
+  'Reverse Lunge': 30,
+  'Glute Bridge': 20,
+  'Forearm Plank': 15,
+  'Treadmill Incline Walk': 220,
+  'Pike Push-Up': 25,
+  'Close-Grip Push-Up': 25,
+  'Dead Bug': 15,
+  'Mountain Climber': 35,
+  'Treadmill Brisk Walk': 170,
+  'Treadmill Easy Walk': 180,
+  'Bird Dog': 12,
+  'Wall Sit': 20,
+  'Single-Leg Glute Bridge': 20,
+  'Calf Raise': 15,
+  'Treadmill Incline Intervals': 220,
+  'Burpee': 45,
+  'Treadmill Walk/Jog': 260,
+}
+
+const estimatedCalories = (name) => EXERCISE_CALORIES[name] ?? 25
 
 const HOME_PLAN = [
   {
@@ -116,9 +140,47 @@ export default function WorkoutTracker({ userId, selectedDate, workouts, burned,
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [openExercise, setOpenExercise] = useState(null)
+  const [completingKey, setCompletingKey] = useState('')
 
   const todayName = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'America/Chicago' }).format(new Date())
   const planDay = HOME_PLAN.find((item) => item.day === todayName) || HOME_PLAN[0]
+
+  const completedPlanExercises = useMemo(
+    () => new Set(workouts.filter((item) => item.planExerciseKey).map((item) => item.planExerciseKey)),
+    [workouts],
+  )
+
+  const completeExercise = async (exercise, index) => {
+    if (!canAdd) return
+    const planExerciseKey = `${planDay.day}-${index}`
+    if (completedPlanExercises.has(planExerciseKey)) return
+
+    setError('')
+    setCompletingKey(planExerciseKey)
+
+    const calories = estimatedCalories(exercise.name)
+    const workoutTime = localTime(new Date())
+    const workedOutAt = new Date(`${selectedDate}T${workoutTime}:00`)
+
+    try {
+      await addDoc(collection(db, 'users', userId, 'workouts'), {
+        workout: exercise.name,
+        caloriesBurned: calories,
+        dateKey: selectedDate,
+        time: workoutTime,
+        workedOutAt: Timestamp.fromDate(workedOutAt),
+        createdAt: serverTimestamp(),
+        source: 'daily-plan',
+        planExerciseKey,
+        estimatedCalories: true,
+      })
+    } catch (err) {
+      console.error('Exercise completion error:', err)
+      setError('Could not mark that exercise complete. Check your Firestore workout permissions.')
+    } finally {
+      setCompletingKey('')
+    }
+  }
 
   const submit = async (event) => {
     event.preventDefault()
@@ -163,60 +225,54 @@ export default function WorkoutTracker({ userId, selectedDate, workouts, burned,
   }
 
   const workoutStyles = `
-    .workout-card { color: #f8fafc; background: #0f172a !important; border-color: #263244 !important; }
-    .workout-heading h2, .workout-card h2, .workout-card h3, .workout-card strong, .workout-card label { color: #f8fafc; }
-    .workout-card .eyebrow { color: #94a3b8; }
-    .workout-card .workout-subtitle, .workout-card p, .workout-readonly-note { color: #94a3b8; }
-    .home-plan-shell { margin-top: 16px; padding: 16px; border: 1px solid #334155; border-radius: 18px; background: linear-gradient(180deg, #111c2f 0%, #0b1324 100%); }
+    .home-plan-shell { margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.018) 100%); }
     .home-plan-day { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 14px; }
-    .home-plan-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #94a3b8; margin-bottom: 5px; }
-    .home-plan-day h3 { margin: 0; font-size: 18px; line-height: 1.25; color: #f8fafc; }
-    .home-plan-day p { margin: 6px 0 0; color: #94a3b8; font-size: 13px; }
-    .home-plan-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: #123c2a; color: #6ee7b7; }
+    .home-plan-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--muted); margin-bottom: 5px; }
+    .home-plan-day h3 { margin: 0; font: 800 18px/1.25 'Manrope', sans-serif; color: var(--text); }
+    .home-plan-day p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .home-plan-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: rgba(184,242,122,.09); color: var(--green); }
     .home-exercise-list { display: grid; gap: 8px; }
-    .home-exercise-card { width: 100%; border: 1px solid #334155; background: #162033; border-radius: 14px; padding: 11px 12px; display: flex; align-items: center; gap: 11px; text-align: left; cursor: pointer; color: #f8fafc; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease; }
-    .home-exercise-card:hover { transform: translateY(-1px); border-color: #34d399; background: #1b2a40; box-shadow: 0 7px 18px rgba(0, 0, 0, .28); }
-    .home-exercise-card > svg { margin-left: auto; color: #94a3b8; flex: 0 0 auto; }
-    .home-exercise-number { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: #123c2a; color: #6ee7b7; font-size: 12px; font-weight: 800; flex: 0 0 auto; }
+    .home-exercise-card { width: 100%; min-width: 0; border: 1px solid var(--line); background: rgba(255,255,255,.025); border-radius: 14px; padding: 10px; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; text-align: left; color: inherit; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+    .home-exercise-card:hover { transform: translateY(-1px); border-color: rgba(184,242,122,.35); background: rgba(255,255,255,.045); box-shadow: 0 7px 18px rgba(0,0,0,.14); }
+    .home-exercise-info { min-width: 0; width: 100%; border: 0; background: transparent; color: inherit; padding: 0; display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 10px; text-align: left; cursor: pointer; }
+    .home-exercise-info:focus-visible, .complete-exercise-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 9px; }
+    .home-exercise-number { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: rgba(184,242,122,.09); color: var(--green); font-size: 12px; font-weight: 800; flex: 0 0 auto; }
     .home-exercise-copy { min-width: 0; display: grid; gap: 3px; }
-    .home-exercise-copy strong { font-size: 14px; color: #f8fafc; }
-    .home-exercise-copy span { font-size: 12px; color: #94a3b8; }
+    .home-exercise-copy strong { font-size: 14px; overflow-wrap: anywhere; }
+    .home-exercise-copy span { font-size: 12px; color: var(--muted); }
+    .home-exercise-copy small { color: #91a3ad; font-size: 10px; }
+    .complete-exercise-btn { min-height: 36px; padding: 0 10px; border: 1px solid rgba(184,242,122,.22); border-radius: 10px; background: rgba(184,242,122,.07); color: var(--green); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .complete-exercise-btn:hover { background: rgba(184,242,122,.13); border-color: rgba(184,242,122,.4); }
+    .complete-exercise-btn.completed { color: #0b1206; background: var(--green); border-color: var(--green); cursor: default; }
+    .complete-exercise-btn:disabled { opacity: .9; }
     .home-plan-tip, .home-plan-disclaimer { margin-top: 12px; border-radius: 12px; padding: 11px 12px; font-size: 12px; line-height: 1.5; }
-    .home-plan-tip { background: #17243a; color: #cbd5e1; border: 1px solid #334155; }
-    .home-plan-tip strong { color: #f8fafc; }
-    .home-plan-disclaimer { color: #94a3b8; background: #111827; border: 1px solid #334155; margin-bottom: 0; }
-    .burned-badge { background: #1b2a40 !important; border-color: #334155 !important; color: #f8fafc !important; }
-    .burned-badge span { color: #94a3b8 !important; }
-    .workout-form { color: #f8fafc; }
-    .workout-form input, .workout-form select, .workout-form textarea { background: #111827 !important; color: #f8fafc !important; border-color: #334155 !important; }
-    .workout-form input::placeholder { color: #64748b; }
-    .input-icon-wrap, .calorie-input-wrap { background: #111827 !important; border-color: #334155 !important; }
-    .input-icon-wrap svg { color: #94a3b8; }
-    .calorie-input-wrap span { color: #94a3b8; }
-    .workout-empty { background: #111827 !important; border-color: #334155 !important; color: #94a3b8 !important; }
-    .workout-row { background: #111827 !important; border-color: #334155 !important; color: #f8fafc; }
-    .workout-row-main span { color: #94a3b8 !important; }
-    .workout-row-right strong { color: #f8fafc !important; }
-    .workout-row-right strong span { color: #94a3b8 !important; }
-    .delete-btn { background: #1f2937 !important; color: #fca5a5 !important; border-color: #374151 !important; }
-    .form-error { color: #fca5a5 !important; }
-    .workout-add-btn { box-shadow: none; }
-    .exercise-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(2, 6, 23, .82); display: grid; place-items: center; padding: 20px; }
-    .exercise-modal { width: min(620px, 100%); max-height: min(90vh, 760px); overflow: auto; border-radius: 22px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
-    .exercise-modal-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #334155; font-size: 11px; font-weight: 800; letter-spacing: .09em; color: #94a3b8; }
-    .exercise-back-btn, .exercise-close-btn { width: 36px; height: 36px; border: 0; border-radius: 10px; background: #1e293b; color: #f8fafc; display: grid; place-items: center; cursor: pointer; }
-    .exercise-back-btn:hover, .exercise-close-btn:hover { background: #334155; }
-    .exercise-picture { padding: 18px 18px 0; color: #e2e8f0; }
+    .home-plan-tip { background: rgba(133,215,255,.055); color: #b8c7cf; border: 1px solid rgba(133,215,255,.12); }
+    .home-plan-disclaimer { color: var(--muted); background: rgba(255,255,255,.018); border: 1px solid var(--line); margin-bottom: 0; }
+    .exercise-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.72); display: grid; place-items: center; padding: 20px; }
+    .exercise-modal { width: min(620px, 100%); max-height: min(90vh, 760px); overflow: auto; border-radius: 22px; border: 1px solid var(--line); background: #10161c; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+    .exercise-modal-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 800; letter-spacing: .09em; color: var(--muted); }
+    .exercise-back-btn, .exercise-close-btn { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: #131a20; color: #dfe8e2; display: grid; place-items: center; cursor: pointer; }
+    .exercise-back-btn:hover, .exercise-close-btn:hover { background: #192229; border-color: rgba(184,242,122,.32); color: var(--green); }
+    .exercise-picture { padding: 18px 18px 0; }
     .exercise-picture svg { width: 100%; height: auto; display: block; border-radius: 18px; }
     .exercise-modal-content { padding: 18px 20px 22px; }
-    .exercise-modal-content h3 { margin: 3px 0 8px; font-size: 24px; color: #f8fafc; }
-    .exercise-modal-content > p:not(.eyebrow) { margin: 0; color: #cbd5e1; line-height: 1.65; }
-    .exercise-form-note { margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: #2a1d13; border: 1px solid #7c4a21; color: #fed7aa; font-size: 12px; line-height: 1.5; }
+    .exercise-modal-content h3 { margin: 3px 0 8px; font: 800 24px 'Manrope', sans-serif; color: var(--text); }
+    .exercise-modal-content > p:not(.eyebrow) { margin: 0; color: #c0cbc5; line-height: 1.65; }
+    .exercise-form-note { margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: rgba(255,184,124,.07); border: 1px solid rgba(255,184,124,.14); color: #ffc79e; font-size: 12px; line-height: 1.5; }
     @media (max-width: 560px) {
       .home-plan-shell { padding: 12px; }
       .home-plan-day h3 { font-size: 16px; }
-      .exercise-modal-backdrop { padding: 10px; }
+      .exercise-modal-backdrop { padding: 8px; }
+      .exercise-modal { max-height: 94vh; border-radius: 18px; }
+      .exercise-picture { padding: 12px 12px 0; }
       .exercise-modal-content { padding: 15px 16px 18px; }
+    }
+    @media (max-width: 420px) {
+      .home-exercise-card { grid-template-columns: 24px minmax(0, 1fr); }
+      .home-exercise-info { grid-template-columns: 24px minmax(0, 1fr); gap: 8px; }
+      .home-exercise-number { width: 24px; height: 24px; font-size: 10px; }
+      .complete-exercise-btn { grid-column: 1 / -1; width: 100%; min-height: 42px; }
+      .home-exercise-copy strong { font-size: 13px; }
     }
   `
 
@@ -248,21 +304,43 @@ export default function WorkoutTracker({ userId, selectedDate, workouts, burned,
         </div>
 
         <div className="home-exercise-list">
-          {planDay.exercises.map((exercise, index) => (
-            <button
-              key={`${exercise.name}-${index}`}
-              type="button"
-              className="home-exercise-card"
-              onClick={() => setOpenExercise(exercise)}
-            >
-              <div className="home-exercise-number">{index + 1}</div>
-              <div className="home-exercise-copy">
-                <strong>{exercise.name}</strong>
-                <span>{exercise.sets}</span>
+          {planDay.exercises.map((exercise, index) => {
+            const planExerciseKey = `${planDay.day}-${index}`
+            const completed = completedPlanExercises.has(planExerciseKey)
+            const estimate = estimatedCalories(exercise.name)
+            const isCompleting = completingKey === planExerciseKey
+
+            return (
+              <div className="home-exercise-card" key={planExerciseKey}>
+                <button
+                  type="button"
+                  className="home-exercise-info"
+                  onClick={() => setOpenExercise(exercise)}
+                  aria-label={`View ${exercise.name} exercise guide`}
+                >
+                  <div className="home-exercise-number">{index + 1}</div>
+                  <div className="home-exercise-copy">
+                    <strong>{exercise.name}</strong>
+                    <span>{exercise.sets}</span>
+                    <small>Estimated burn: ~{estimate} cal</small>
+                  </div>
+                </button>
+
+                {canAdd && (
+                  <button
+                    type="button"
+                    className={`complete-exercise-btn${completed ? ' completed' : ''}`}
+                    onClick={() => completeExercise(exercise, index)}
+                    disabled={completed || isCompleting}
+                    aria-label={completed ? `${exercise.name} completed` : `Complete ${exercise.name}`}
+                  >
+                    <CheckCircle2 size={15} />
+                    {isCompleting ? 'Saving…' : completed ? 'Completed' : 'Complete'}
+                  </button>
+                )}
               </div>
-              <Info size={18} />
-            </button>
-          ))}
+            )
+          })}
         </div>
 
         <div className="home-plan-tip">
@@ -388,12 +466,12 @@ function ExerciseIllustration({ kind }) {
     <svg viewBox="0 0 420 260" role="img" aria-hidden="true">
       <defs>
         <linearGradient id={`bg-${kind}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#172554" />
-          <stop offset="100%" stopColor="#0f3d33" />
+          <stop offset="0%" stopColor="#ecfdf5" />
+          <stop offset="100%" stopColor="#dbeafe" />
         </linearGradient>
       </defs>
       <rect width="420" height="260" rx="28" fill={`url(#bg-${kind})`} />
-      <line x1="40" y1="220" x2="380" y2="220" stroke="#64748b" strokeWidth="4" />
+      <line x1="40" y1="220" x2="380" y2="220" stroke="#94a3b8" strokeWidth="4" />
       {renderPose(kind, common)}
     </svg>
   )
